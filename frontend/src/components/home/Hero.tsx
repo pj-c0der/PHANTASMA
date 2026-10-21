@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import ColorBends from "@/components/ui/ColorBends";
+import SpecularButton from "@/components/ui/SpecularButton";
 
 export default function Hero() {
+  const router = useRouter();
+
   return (
     <section className="relative w-full z-0 flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center pt-20">
       {/* THE FIX: Wrapped in an absolute container to push it behind the text */}
@@ -74,16 +78,30 @@ export default function Hero() {
         >
           <Link
             href="/contact"
-            className="rounded-full bg-brand-violet px-8 py-3 text-sm font-semibold text-brand-ivory transition hover:bg-brand-violet/80"
+            className="rounded-full bg-brand-violet px-8 py-4 font-semibold text-brand-ivory transition hover:bg-brand-violet/80"
           >
             BOOK A PROJECT
           </Link>
-          <Link
-            href="/portfolio"
-            className="rounded-full border border-brand-ivory/20 bg-transparent px-8 py-3 text-sm font-semibold text-brand-ivory transition hover:bg-brand-ivory/5"
+          <SpecularButton
+            size="lg"
+            radius={40}
+            tint="#ffffff"
+            tintOpacity={0.04}
+            textColor="#f5f5f5"
+            lineColor="#a855f7"
+            baseColor="#525252"
+            intensity={1}
+            idleIntensity={0.35}
+            shineSize={14}
+            shineFade={40}
+            thickness={1.5}
+            glow={1.4}
+            followMouse
+            proximity={250}
+            onClick={() => router.push("/portfolio")}
           >
-            EXPLORE OUR WORK
-          </Link>
+            Explore Our Work
+          </SpecularButton>
         </motion.div>
       </motion.div>
     </section>

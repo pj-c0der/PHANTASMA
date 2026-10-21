@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import "./ColorBends.css";
 
@@ -156,9 +156,17 @@ export default function ColorBends({
   const pointerTargetRef = useRef<THREE.Vector2>(new THREE.Vector2(0, 0));
   const pointerCurrentRef = useRef<THREE.Vector2>(new THREE.Vector2(0, 0));
   const pointerSmoothRef = useRef<number>(8);
+  const [webglFailed, setWebglFailed] = useState(false);
 
   useEffect(() => {
-    const container = containerRef.current!;
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (typeof WebGL2RenderingContext === "undefined") {
+      queueMicrotask(() => setWebglFailed(true));
+      return;
+    }
+
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
@@ -197,11 +205,19 @@ export default function ColorBends({
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: false,
-      powerPreference: "high-performance",
-      alpha: true,
-    });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: false,
+        powerPreference: "high-performance",
+        alpha: true,
+      });
+    } catch {
+      geometry.dispose();
+      material.dispose();
+      queueMicrotask(() => setWebglFailed(true));
+      return;
+    }
     rendererRef.current = renderer;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -210,6 +226,16 @@ export default function ColorBends({
     renderer.domElement.style.height = "100%";
     renderer.domElement.style.display = "block";
     container.appendChild(renderer.domElement);
+
+    const handleContextLost = (event: Event) => {
+      event.preventDefault();
+      renderer.domElement.style.display = "none";
+      setWebglFailed(true);
+    };
+    renderer.domElement.addEventListener(
+      "webglcontextlost",
+      handleContextLost,
+    );
 
     const clock = new THREE.Clock();
 
@@ -255,6 +281,10 @@ export default function ColorBends({
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       if (resizeObserverRef.current) resizeObserverRef.current.disconnect();
       else (window as Window).removeEventListener("resize", handleResize);
+      renderer.domElement.removeEventListener(
+        "webglcontextlost",
+        handleContextLost,
+      );
       geometry.dispose();
       material.dispose();
       renderer.dispose();
@@ -365,6 +395,13 @@ export default function ColorBends({
       ref={containerRef}
       className={`w-full h-full relative overflow-hidden ${className}`}
       style={style}
-    />
+    >
+      {webglFailed && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(168,85,247,0.35),transparent_65%)]"
+        />
+      )}
+    </div>
   );
 }
