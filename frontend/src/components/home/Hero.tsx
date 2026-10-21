@@ -3,8 +3,9 @@ import ColorBends from "@/components/ui/ColorBends";
 
 export default function Hero() {
   return (
-    <section className="relative z-0 flex min-h-[calc(100svh-5rem)] items-center justify-center overflow-hidden px-6 py-24 text-center">
-      <div className="absolute inset-0 -z-10 w-full h-full">
+    <section className="relative z-0 flex min-h-[calc(100svh-5rem)] flex-col items-center justify-center overflow-hidden px-6 text-center">
+      {/* WebGL background: absolutely positioned and pushed behind the text */}
+      <div className="absolute inset-0 -z-10 h-full w-full">
         <ColorBends
           colors={["#0a0a0a", "#6b4c8a", "#1a0b2e", "#050505"]}
           rotation={45}
@@ -22,47 +23,37 @@ export default function Hero() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-brand-ivory/40 sm:text-xs">
+      <div className="relative z-10 flex max-w-4xl flex-col items-center">
+        <span className="mb-6 text-xs font-semibold uppercase tracking-[0.4em] text-brand-ivory/60">
           EST. PASIG CITY, PHILIPPINES
-        </p>
+        </span>
 
-        <h1
-          aria-label="Phantasma Studio"
-          className="mt-8 flex w-fit max-w-full flex-col items-center font-serif text-brand-ivory"
-        >
-          <span className="text-[clamp(2.5rem,12vw,3.75rem)] leading-[0.95] tracking-[0.02em] sm:text-6xl lg:text-7xl">
-            PHANTASMA
-          </span>
-          <span
-            aria-hidden="true"
-            className="mt-3 flex w-full justify-between px-1 text-xl tracking-wide sm:text-2xl"
-          >
-            {"STUDIO".split("").map((letter) => (
-              <span key={letter}>{letter}</span>
-            ))}
+        <h1 className="flex flex-col items-center font-serif text-6xl font-bold leading-none text-brand-ivory md:text-7xl">
+          <span>PHANTASMA</span>
+          <span className="ml-4 mt-2 text-5xl tracking-[0.5em] md:text-6xl md:tracking-[0.8em]">
+            STUDIO
           </span>
         </h1>
 
-        <p className="mt-8 text-base text-brand-ivory">
+        <p className="mt-8 font-sans text-lg text-brand-ivory md:text-xl">
           Integrated Creative Media &amp; Digital Production Enterprise
         </p>
 
-        <p className="mt-4 max-w-lg text-sm leading-7 text-brand-ivory/50">
+        <p className="mt-4 max-w-lg font-sans text-sm text-brand-ivory/70">
           Transforming moments and ideas into timeless, meaningful, and
           compelling visual experiences.
         </p>
 
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <div className="mt-10 flex flex-col gap-4 sm:flex-row">
           <Link
             href="/contact"
-            className="rounded-full bg-brand-violet px-8 py-3 text-sm font-medium tracking-[0.08em] text-brand-ivory transition-colors hover:bg-brand-violet/85"
+            className="rounded-full bg-brand-violet px-8 py-3 text-sm font-semibold text-brand-ivory transition hover:bg-brand-violet/80"
           >
             BOOK A PROJECT
           </Link>
           <Link
             href="/portfolio"
-            className="rounded-full border border-brand-ivory/20 px-8 py-3 text-sm font-medium tracking-[0.08em] text-brand-ivory transition-colors hover:border-brand-ivory/40 hover:bg-brand-ivory/5"
+            className="rounded-full border border-brand-ivory/20 bg-transparent px-8 py-3 text-sm font-semibold text-brand-ivory transition hover:bg-brand-ivory/5"
           >
             EXPLORE OUR WORK
           </Link>
