@@ -7,19 +7,19 @@ export default function Hero() {
       {/* WebGL background: absolutely positioned and pushed behind the text */}
       <div className="absolute inset-0 -z-10 h-full w-full">
         <ColorBends
-          colors={["#0a0a0a", "#6b4c8a", "#1a0b2e", "#050505"]}
-          rotation={45}
-          speed={0.1}
-          scale={1.2}
-          frequency={1.5}
-          warpStrength={1.5}
-          mouseInfluence={0.4}
-          noise={0.15}
-          parallax={0.5}
+          colors={["#a855f7", "#c084fc", "#6b4c8a", "#3b0764"]}
+          rotation={-15}
+          speed={0.3}
+          scale={1.5}
+          frequency={1.2}
+          warpStrength={2.0}
+          mouseInfluence={0.5}
+          noise={0.1}
+          parallax={0.1}
           iterations={2}
-          intensity={0.8}
-          bandWidth={5}
-          transparent={true}
+          intensity={2.5}
+          bandWidth={3}
+          transparent={false}
         />
       </div>
 
