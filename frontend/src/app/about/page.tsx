@@ -1,10 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import ReflectiveCard from "@/components/ui/ReflectiveCard";
 
 type Founder = {
   name: string;
   role: string;
+  imageSrc: string;
+  idValue: string;
 };
 
 type ProcessStep = {
@@ -14,10 +17,30 @@ type ProcessStep = {
 };
 
 const founders: Founder[] = [
-  { name: "Vin Hendrix Presto", role: "CO-FOUNDER" },
-  { name: "Peter Sloanne Miralles", role: "CO-FOUNDER" },
-  { name: "Russel James Buen", role: "CO-FOUNDER" },
-  { name: "Prespurt James Bellen", role: "CO-FOUNDER" },
+  {
+    name: "Vin Hendrix Presto",
+    role: "CO-FOUNDER",
+    imageSrc: "/team/vin.jpg",
+    idValue: "8901 2345 6789",
+  },
+  {
+    name: "Peter Sloanne Miralles",
+    role: "CO-FOUNDER",
+    imageSrc: "/team/peter.jpg",
+    idValue: "1234 5678 9012",
+  },
+  {
+    name: "Russel James Buen",
+    role: "CO-FOUNDER",
+    imageSrc: "/team/russel.jpg",
+    idValue: "5678 9012 3456",
+  },
+  {
+    name: "Donny Pangilinan",
+    role: "CO-FOUNDER",
+    imageSrc: "/team/prespurt.jpg",
+    idValue: "9012 3456 7890",
+  },
 ];
 
 const processSteps: ProcessStep[] = [
@@ -49,8 +72,7 @@ const processSteps: ProcessStep[] = [
   {
     number: "06",
     title: "DELIVER",
-    description:
-      "Client receives the completed digital or physical output.",
+    description: "Client receives the completed digital or physical output.",
   },
 ];
 
@@ -124,17 +146,48 @@ export default function AboutPage() {
               </h2>
             </div>
 
-            <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {founders.map((founder) => (
-                <div key={founder.name}>
-                  <div className="aspect-[3/4] w-full border border-brand-ivory/10 bg-zinc-900" />
-                  <h3 className="mt-5 font-serif text-xl text-brand-ivory">
-                    {founder.name}
-                  </h3>
-                  <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-brand-ivory/40">
-                    {founder.role}
-                  </p>
-                </div>
+            <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {founders.map((member, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{
+                    duration: 0.6,
+                    delay: index * 0.15,
+                    ease: "easeOut",
+                  }}
+                  className="flex flex-col items-center"
+                >
+                  {/* 1. The container giving the 3D canvas its shape */}
+                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-sm">
+                    {/* 2. The React Bits Component */}
+                    <ReflectiveCard
+                      name={member.name}
+                      role={member.role}
+                      idValue={member.idValue}
+                      imageSrc={member.imageSrc}
+                      width="100%"
+                      height="100%"
+                      webcam={false}
+                      tint="#d4bcd6"
+                      metalness={0.6}
+                      roughness={0}
+                      blurStrength={0}
+                      shine={1}
+                      glare={0.4}
+                      grayscale={1}
+                      warp={0}
+                      warpScale={0}
+                      bevel={0}
+                      tiltStrength={3}
+                      radius={24}
+                      enableTilt={true}
+                      intro={true}
+                    />
+                  </div>
+                </motion.div>
               ))}
             </div>
           </div>
