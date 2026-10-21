@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 const socialLinks = [
   { label: "Instagram", href: "#" },
@@ -11,7 +14,13 @@ const currentYear = new Date().getFullYear();
 export default function Footer() {
   return (
     <footer className="border-t border-brand-ivory/10 bg-brand-black">
-      <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="mx-auto max-w-7xl px-6 py-12 lg:px-8"
+      >
         <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-sm">
             <Link
@@ -48,7 +57,7 @@ export default function Footer() {
           <p>&copy; {currentYear} Phantasma Studio. All rights reserved.</p>
           <p className="tracking-wide">Crafted with intention.</p>
         </div>
-      </div>
+      </motion.div>
     </footer>
   );
 }

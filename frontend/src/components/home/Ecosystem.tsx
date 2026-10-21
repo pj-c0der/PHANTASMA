@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "framer-motion";
+
 type EcosystemColumn = {
   number: string;
   title: string;
@@ -35,18 +39,35 @@ export default function Ecosystem() {
   return (
     <section className="px-6 py-32 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-16 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="mb-16 text-center"
+        >
           <p className="text-xs uppercase tracking-[0.4em] text-brand-ivory/40">
             WHAT WE DO
           </p>
           <h2 className="mt-4 font-serif text-4xl text-brand-ivory">
             Our Creative Ecosystem
           </h2>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 divide-y divide-brand-ivory/10 md:grid-cols-3 md:divide-x md:divide-y-0">
-          {ecosystemColumns.map((column) => (
-            <div key={column.number} className="py-10 md:px-6 md:py-0 lg:px-10">
+          {ecosystemColumns.map((column, index) => (
+            <motion.div
+              key={column.number}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{
+                duration: 0.6,
+                delay: index * 0.15,
+                ease: "easeOut",
+              }}
+              className="py-10 md:px-6 md:py-0 lg:px-10"
+            >
               <p className="text-xs tracking-[0.2em] text-brand-ivory/40">
                 {column.number}
               </p>
@@ -63,7 +84,7 @@ export default function Ecosystem() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
