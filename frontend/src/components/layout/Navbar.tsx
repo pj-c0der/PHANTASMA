@@ -31,7 +31,7 @@ export default function Navbar() {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-brand-ivory/5 bg-brand-black/40 backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 w-full border-b border-brand-ivory/10 bg-brand-black/10 backdrop-blur-3xl">
       <nav
         aria-label="Primary"
         className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8"

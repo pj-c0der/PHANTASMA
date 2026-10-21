@@ -1,12 +1,26 @@
 import Link from "next/link";
+import ColorBends from "@/components/ui/ColorBends";
 
 export default function Hero() {
   return (
     <section className="relative z-0 flex min-h-[calc(100svh-5rem)] items-center justify-center overflow-hidden px-6 py-24 text-center">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-1/4 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-brand-violet/30 blur-[120px] md:h-[800px] md:w-[800px] md:blur-[150px]"
-      />
+      <div className="absolute inset-0 -z-10 w-full h-full">
+        <ColorBends
+          colors={["#0a0a0a", "#6b4c8a", "#1a0b2e", "#050505"]}
+          rotation={45}
+          speed={0.1}
+          scale={1.2}
+          frequency={1.5}
+          warpStrength={1.5}
+          mouseInfluence={0.4}
+          noise={0.15}
+          parallax={0.5}
+          iterations={2}
+          intensity={0.8}
+          bandWidth={5}
+          transparent={true}
+        />
+      </div>
 
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center">
         <p className="text-[10px] uppercase tracking-[0.4em] text-brand-ivory/40 sm:text-xs">
