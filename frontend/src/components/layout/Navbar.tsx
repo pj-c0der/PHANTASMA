@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -30,17 +31,26 @@ export default function Navbar() {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-brand-ivory/10 bg-brand-black/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-brand-ivory/5 bg-brand-black/40 backdrop-blur-2xl">
       <nav
         aria-label="Primary"
         className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8"
       >
-        <Link
-          href="/"
-          onClick={closeMenu}
-          className="font-serif text-lg tracking-[0.3em] text-brand-ivory transition-colors hover:text-brand-violet sm:text-xl"
-        >
-          PHANTASMA
+        <Link href="/" className="flex items-center gap-3">
+          {/* The Logo Image */}
+          <Image
+            src="/images/logo.png"
+            alt="Phantasma Studio Logo"
+            width={40}
+            height={40}
+            className="h-10 w-auto object-contain"
+            priority
+          />
+
+          {/* The Text Wordmark */}
+          <span className="font-serif text-xl md:text-2xl font-bold tracking-widest text-brand-ivory mt-1">
+            PHANTASMA
+          </span>
         </Link>
 
         <div className="hidden items-center gap-8 lg:flex">
@@ -67,7 +77,9 @@ export default function Navbar() {
           onClick={() => setIsMenuOpen((open) => !open)}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-menu"
-          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-label={
+            isMenuOpen ? "Close navigation menu" : "Open navigation menu"
+          }
           className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-brand-ivory/15 text-brand-ivory transition-colors hover:border-brand-ivory/40 hover:text-brand-ivory lg:hidden"
         >
           {isMenuOpen ? (

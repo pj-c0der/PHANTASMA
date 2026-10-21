@@ -1,15 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-[calc(100svh-5rem)] items-center justify-center overflow-hidden px-6 py-24 text-center">
-      <Image
-        src="/images/hero-bg-placeholder.jpg"
-        alt=""
-        fill
-        sizes="100vw"
-        className="pointer-events-none object-cover opacity-10"
+    <section className="relative z-0 flex min-h-[calc(100svh-5rem)] items-center justify-center overflow-hidden px-6 py-24 text-center">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/4 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-brand-violet/30 blur-[120px] md:h-[800px] md:w-[800px] md:blur-[150px]"
       />
 
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center">
