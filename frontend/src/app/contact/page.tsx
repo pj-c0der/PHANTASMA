@@ -5,7 +5,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const directDetails = [
-  { label: "Email", value: "hello@phantasma.studio", href: "mailto:hello@phantasma.studio" },
+  {
+    label: "Email",
+    value: "phantasma.studio@gmail.com",
+    href: "mailto:phantasma.studio@gmail.com",
+  },
   { label: "Phone", value: "+63 917 123 4567", href: "tel:+639171234567" },
 ];
 
@@ -41,7 +45,7 @@ const inputClasses =
   "w-full bg-transparent border-b border-brand-ivory/20 py-2 text-brand-ivory placeholder-brand-ivory/30 focus:border-brand-violet focus:outline-none transition-colors";
 
 // Set to "/images/map-placeholder.jpg" once the map asset is added.
-const mapImage: string | null = null;
+const mapImage = "/images/map-placeholder.jpg";
 
 export default function ContactPage() {
   return (

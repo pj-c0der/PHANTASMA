@@ -106,7 +106,7 @@ export default function BookPage() {
                   {/* Visual */}
                   <div className="relative h-[600px] w-full overflow-hidden rounded-md bg-zinc-900 lg:h-full lg:min-h-[600px]">
                     <Image
-                      src="/images/hero-bg-placeholder.jpg"
+                      src="/images/form.png"
                       alt="Abstract violet light bending across a dark background"
                       fill
                       priority
