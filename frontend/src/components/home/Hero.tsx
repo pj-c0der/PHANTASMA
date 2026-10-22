@@ -78,7 +78,7 @@ export default function Hero() {
         >
           <Link
             href="/contact"
-            className="rounded-full bg-brand-violet px-8 py-4 font-semibold text-brand-ivory transition hover:bg-brand-violet/80"
+            className="rounded-full bg-brand-violet px-8 py-4 text-lg text-brand-ivory transition hover:bg-brand-violet/80"
           >
             BOOK A PROJECT
           </Link>
@@ -100,7 +100,7 @@ export default function Hero() {
             proximity={250}
             onClick={() => router.push("/portfolio")}
           >
-            Explore Our Work
+            EXPLORE OUR WORK
           </SpecularButton>
         </motion.div>
       </motion.div>
