@@ -16,14 +16,10 @@ type Project = {
   aspect: string;
   isVideo?: boolean;
   image?: string;
+  video?: string;
 };
 
-const filters: Filter[] = [
-  "ALL",
-  "PHOTOGRAPHY",
-  "VIDEO",
-  "GRAPHIC DESIGN",
-];
+const filters: Filter[] = ["ALL", "PHOTOGRAPHY", "VIDEO", "GRAPHIC DESIGN"];
 
 const projects: Project[] = [
   {
@@ -33,6 +29,7 @@ const projects: Project[] = [
     title: "Graduation Stories",
     desc: "A warm, dignified academic milestone story capturing pride, gratitude, and achievement.",
     aspect: "aspect-[4/5]",
+    image: "/portfolio/gradpic.png",
   },
   {
     id: 2,
@@ -41,6 +38,7 @@ const projects: Project[] = [
     title: "An Intimate Celebration",
     desc: "A small, intimate wedding celebration told through quiet, cinematic moments.",
     aspect: "aspect-video",
+    image: "/portfolio/celeb.png",
   },
   {
     id: 3,
@@ -49,6 +47,7 @@ const projects: Project[] = [
     title: "Resort Visual Campaign",
     desc: "A resort visual brand campaign blending photography and design languages.",
     aspect: "aspect-[21/9]",
+    image: "/portfolio/resort.png",
   },
   {
     id: 4,
@@ -58,6 +57,7 @@ const projects: Project[] = [
     desc: "A highlight reel of a local event, capturing energy and memorable moments.",
     aspect: "aspect-video",
     isVideo: true,
+    video: "/portfolio/event.mp4",
   },
   {
     id: 5,
@@ -66,6 +66,7 @@ const projects: Project[] = [
     title: "Campaign Identity",
     desc: "A brand campaign identity system built for consistency and visual impact.",
     aspect: "aspect-video",
+    image: "/portfolio/brand.jfif",
   },
 ];
 
@@ -143,6 +144,15 @@ export default function PortfolioPage() {
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover"
                     />
+                  ) : project.video ? (
+                    <video
+                      src={project.video}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
                   ) : (
                     <div
                       aria-hidden="true"
@@ -153,16 +163,6 @@ export default function PortfolioPage() {
                   <span className="absolute left-4 top-4 z-10 rounded-full border border-white/30 bg-black/40 px-3 py-1 text-[10px] uppercase tracking-widest text-white backdrop-blur-md">
                     {project.category}
                   </span>
-
-                  {project.isVideo && (
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/50 bg-black/40 p-4 backdrop-blur-sm">
-                      <Play
-                        className="h-5 w-5 fill-white text-white"
-                        aria-hidden="true"
-                      />
-                      <span className="sr-only">Play {project.title}</span>
-                    </div>
-                  )}
                 </div>
 
                 <h2 className="mt-4 font-serif text-xl text-brand-ivory">
