@@ -10,7 +10,7 @@ export default function Hero() {
   const router = useRouter();
 
   return (
-    <section className="relative w-full z-0 flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center pt-20">
+    <section className="relative w-full z-0 flex h-screen flex-col items-center justify-center overflow-hidden px-6 text-center">
       {/* THE FIX: Wrapped in an absolute container to push it behind the text */}
       <div className="absolute inset-0 -z-10 h-full w-full bg-brand-black">
         <ColorBends
@@ -76,26 +76,40 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.9, ease: "easeOut" }}
           className="mt-10 flex flex-col gap-4 sm:flex-row"
         >
-          <Link
-            href="/contact"
-            className="rounded-full bg-brand-violet px-8 py-4 text-lg text-brand-ivory transition hover:bg-brand-violet/80"
-          >
-            BOOK A PROJECT
-          </Link>
           <SpecularButton
             size="lg"
             radius={40}
-            tint="#ffffff"
+            tint="#a855f7"
             tintOpacity={0.04}
             textColor="#f5f5f5"
             lineColor="#a855f7"
-            baseColor="#525252"
+            baseColor="#a855f7"
             intensity={1}
             idleIntensity={0.35}
             shineSize={14}
             shineFade={40}
             thickness={1.5}
-            glow={1.4}
+            glow={5}
+            followMouse
+            proximity={250}
+            onClick={() => router.push("/contact")}
+          >
+            BOOK A PROJECT
+          </SpecularButton>
+          <SpecularButton
+            size="lg"
+            radius={40}
+            tint="#a855f7"
+            tintOpacity={0.04}
+            textColor="#f5f5f5"
+            lineColor="#a855f7"
+            baseColor="#a855f7"
+            intensity={1}
+            idleIntensity={0.35}
+            shineSize={14}
+            shineFade={40}
+            thickness={1.5}
+            glow={5}
             followMouse
             proximity={250}
             onClick={() => router.push("/portfolio")}

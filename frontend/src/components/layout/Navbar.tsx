@@ -31,7 +31,7 @@ export default function Navbar() {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-brand-black/10 backdrop-blur-3xl border-b border-brand-ivory/10">
+    <header className="fixed left-0 top-0 z-50 w-full bg-brand-black/10 backdrop-blur-3xl border-b border-brand-ivory/10">
       <nav
         aria-label="Primary"
         className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8"
@@ -41,19 +41,19 @@ export default function Navbar() {
           <Image
             src="/images/logo.png"
             alt="Phantasma Studio Logo"
-            width={40}
-            height={40}
-            className="h-10 w-auto object-contain"
+            width={110}
+            height={110}
+            className="h-15 w-auto object-contain"
             priority
-          />
-
-          {/* The Text Wordmark */}
-          <span className="font-serif text-xl md:text-2xl font-bold tracking-widest text-brand-ivory mt-1">
-            PHANTASMA
-          </span>
+          />{" "}
         </Link>
 
-        <div className="hidden items-center gap-8 lg:flex">
+        {/* The Text Wordmark */}
+        {/*<span className="font-serif text-xl md:text-2xl font-bold tracking-widest text-brand-ivory mt-1">
+            PHANTASMA
+          </span>*/}
+
+        <div className="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8 lg:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -63,7 +63,10 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+        </div>
 
+        {/* 2. The Right-Aligned Button */}
+        <div className="hidden lg:block">
           <Link
             href="/contact"
             className="rounded-full bg-brand-violet px-6 py-2.5 text-sm font-medium text-brand-ivory transition-colors hover:bg-brand-violet/85"
