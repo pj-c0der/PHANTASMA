@@ -9,6 +9,8 @@ const socialLinks = [
   { label: "Behance", href: "#" },
 ];
 
+const studioLinks = [{ label: "Experience", href: "/experience" }];
+
 const currentYear = new Date().getFullYear();
 
 export default function Footer() {
@@ -32,6 +34,24 @@ export default function Footer() {
             <p className="mt-4 text-sm leading-relaxed text-brand-ivory/50">
               A creative studio transforming moments into timeless media.
             </p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <p className="text-xs uppercase tracking-[0.25em] text-brand-ivory/40">
+              Studio
+            </p>
+            <ul className="flex flex-col gap-2">
+              {studioLinks.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-brand-ivory/60 transition-colors hover:text-brand-ivory"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="flex flex-col gap-3">
