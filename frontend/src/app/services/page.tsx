@@ -12,6 +12,8 @@ type Service = {
   deliverables: string[];
   buttonText: string;
   image?: string;
+  video?: string;
+  isVideo?: boolean;
 };
 
 const services: Service[] = [
@@ -28,6 +30,7 @@ const services: Service[] = [
       "On-location photography",
     ],
     buttonText: "INQUIRE ABOUT PHOTOGRAPHY",
+    image: "/services/photography2.jpg",
   },
   {
     number: "02",
@@ -42,6 +45,8 @@ const services: Service[] = [
       "Sound mastering",
     ],
     buttonText: "INQUIRE ABOUT VIDEO",
+    video: "/services/videoprod2.mp4",
+    isVideo: true,
   },
   {
     number: "03",
@@ -55,6 +60,7 @@ const services: Service[] = [
       "Print-ready designs",
     ],
     buttonText: "INQUIRE ABOUT DESIGN",
+    image: "/services/graphic.jpg",
   },
 ];
 
@@ -106,6 +112,8 @@ export default function ServicesPage() {
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover"
                     />
+                  ) : service.isVideo ? (
+                    <video src={service.video} autoPlay loop muted />
                   ) : (
                     <div
                       aria-hidden="true"

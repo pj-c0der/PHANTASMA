@@ -50,24 +50,28 @@ const physicalProducts: PhysicalProduct[] = [
     title: "PHOTOBOOKS",
     description:
       "Professionally printed and bound photo albums for celebrations, graduations, and special events.",
+    image: "/products/physical/photobooks.jpg",
   },
   {
     number: "02",
     title: "FRAMED PHOTOGRAPHS",
     description:
       "Printed and framed photographs designed for personal and commercial display.",
+    image: "/products/physical/frame.jpg",
   },
   {
     number: "03",
     title: "PERSONALIZED EVENT SOUVENIRS",
     description:
       "Customized tangible keepsakes incorporating event-specific visual elements.",
+    image: "/products/physical/personalized.jpg",
   },
   {
     number: "04",
     title: "USB KEEPSAKE BOXES",
     description:
       "Customized wooden or acrylic boxes containing capacitive digital photographs and video files.",
+    image: "/products/physical/keepsake.jpg",
   },
 ];
 
@@ -93,8 +97,7 @@ const digitalCategories: DigitalCategory[] = [
   {
     number: "03",
     title: "DESIGN TEMPLATES",
-    description:
-      "Editable layouts for events, campaigns, and social content.",
+    description: "Editable layouts for events, campaigns, and social content.",
   },
 ];
 
@@ -102,37 +105,41 @@ const digitalProducts: DigitalProduct[] = [
   {
     number: "01",
     title: "Golden Hour Preset Pack",
-    description:
-      "Warm, sun-kissed tones for outdoor and lifestyle photography",
+    description: "Warm, sun-kissed tones for outdoor and lifestyle photography",
+    image: "/products/digital/golden copy.jpg",
   },
   {
     number: "02",
     title: "Cinematic Portrait Presets",
     description: "Moody, filmic depth for dramatic portrait sessions",
+    image: "/products/digital/cinematic2.jpg",
   },
   {
     number: "03",
     title: "Warm Film LUT Collection",
     description:
       "Vintage, film-inspired grading for wedding and lifestyle footage",
+    image: "/products/digital/warm2.jpg",
   },
   {
     number: "04",
     title: "Editorial Event LUTs",
-    description:
-      "Refined, high-contrast grading for event and cinematic video",
+    description: "Refined, high-contrast grading for event and cinematic video",
+    image: "/products/digital/editorial.jpg",
   },
   {
     number: "05",
     title: "Event Invitation Template Set",
     description:
       "Editable layouts for weddings, launches, and formal gatherings",
+    image: "/products/digital/invitation.jpg",
   },
   {
     number: "06",
     title: "Social Promo Template Kit",
     description:
       "Ready-to-edit layouts for campaigns, promos, and social content",
+    image: "/products/digital/social2.jpg",
   },
 ];
 
