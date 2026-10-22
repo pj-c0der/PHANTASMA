@@ -68,7 +68,7 @@ export default function Navbar() {
         {/* 2. The Right-Aligned Button */}
         <div className="hidden lg:block">
           <Link
-            href="/contact"
+            href="/book"
             className="rounded-full bg-brand-violet px-6 py-2.5 text-sm font-medium text-brand-ivory transition-colors hover:bg-brand-violet/85"
           >
             Book a Project
@@ -111,7 +111,7 @@ export default function Navbar() {
             ))}
 
             <Link
-              href="/contact"
+              href="/book"
               onClick={closeMenu}
               className="mt-6 inline-flex items-center justify-center rounded-full bg-brand-violet px-6 py-3 text-sm font-medium text-brand-ivory transition-colors hover:bg-brand-violet/85"
             >
