@@ -1,8 +1,11 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { AlertCircle } from "lucide-react";
+import { ApiRequestError, submitForm } from "@/lib/api";
 
 const directDetails = [
   { label: "Email", value: "hello@phantasma.studio", href: "mailto:hello@phantasma.studio" },
@@ -16,34 +19,202 @@ const socials = [
 ];
 
 const fields = [
-  { id: "fullName", label: "FULL NAME", type: "text", placeholder: "Jane Doe" },
+  {
+    id: "fullName",
+    label: "FULL NAME",
+    type: "text",
+    placeholder: "Jane Doe",
+    required: true,
+  },
   {
     id: "email",
     label: "EMAIL ADDRESS",
     type: "email",
     placeholder: "jane@example.com",
+    required: true,
   },
   {
     id: "contactNumber",
     label: "CONTACT NUMBER",
     type: "tel",
     placeholder: "+63 --- --- ----",
+    required: false,
   },
   {
     id: "subject",
     label: "SUBJECT",
     type: "text",
     placeholder: "Inquiry about...",
+    required: false,
   },
-];
+] as const;
 
 const inputClasses =
   "w-full bg-transparent border-b border-brand-ivory/20 py-2 text-brand-ivory placeholder-brand-ivory/30 focus:border-brand-violet focus:outline-none transition-colors";
+const requiredContactFields = ["fullName", "email", "message"] as const;
+type ContactField = (typeof fields)[number]["id"] | "message";
+
+const apiFieldNames: Record<string, ContactField> = {
+  fullName: "fullName",
+  full_name: "fullName",
+  email: "email",
+  contactNumber: "contactNumber",
+  contact_number: "contactNumber",
+  subject: "subject",
+  message: "message",
+};
+
+function FieldLabel({
+  htmlFor,
+  label,
+  required,
+}: {
+  htmlFor: string;
+  label: string;
+  required: boolean;
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className="flex items-center justify-between gap-3"
+    >
+      <span className="block text-[10px] uppercase tracking-[0.25em] text-brand-ivory/40">
+        {label}
+      </span>
+      <span
+        className={`text-[9px] uppercase tracking-[0.2em] ${
+          required ? "text-brand-violet" : "text-brand-ivory/30"
+        }`}
+      >
+        {required ? "Required" : "Optional"}
+      </span>
+    </label>
+  );
+}
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+
+  return (
+    <p
+      id={id}
+      className="mt-2 flex items-center gap-2 text-xs leading-5 text-red-300"
+    >
+      <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      {message}
+    </p>
+  );
+}
 
 // Set to "/images/map-placeholder.jpg" once the map asset is added.
 const mapImage: string | null = null;
 
 export default function ContactPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
+  const [submissionMessage, setSubmissionMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<ContactField, string>>
+  >({});
+
+  const clearFieldError = (field: ContactField) => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+    setSubmissionMessage("");
+    setSubmissionStatus("idle");
+  };
+
+  const inputClassName = (field: ContactField) =>
+    `${inputClasses} ${
+      fieldErrors[field] ? "border-red-400 focus:border-red-400" : ""
+    }`;
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setSubmissionStatus("submitting");
+    setSubmissionMessage("");
+
+    const form = event.currentTarget;
+    try {
+      const formData = new FormData(form);
+      const nextFieldErrors: Partial<Record<ContactField, string>> = {};
+      for (const field of requiredContactFields) {
+        if (!String(formData.get(field) ?? "").trim()) {
+          nextFieldErrors[field] =
+            field === "message"
+              ? "Please enter your message."
+              : `Please enter your ${field === "fullName" ? "full name" : "email address"}.`;
+        }
+      }
+
+      const email = String(formData.get("email") ?? "").trim();
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        nextFieldErrors.email = "Enter a valid email address.";
+      }
+
+      if (Object.keys(nextFieldErrors).length > 0) {
+        setFieldErrors(nextFieldErrors);
+        setSubmissionStatus("error");
+        setSubmissionMessage(
+          "Please complete the highlighted fields before sending.",
+        );
+        const firstInvalidField = requiredContactFields.find(
+          (field) => nextFieldErrors[field],
+        );
+        if (firstInvalidField) {
+          document.getElementById(firstInvalidField)?.focus();
+        }
+        return;
+      }
+
+      const receipt = await submitForm("/api/contact-messages", {
+        fullName: String(formData.get("fullName") ?? ""),
+        email,
+        contactNumber: String(formData.get("contactNumber") ?? "").trim() || null,
+        subject: String(formData.get("subject") ?? "").trim() || null,
+        message: String(formData.get("message") ?? ""),
+      });
+      setSubmissionStatus("success");
+      setSubmissionMessage(`Message saved successfully. Reference #${receipt.id}.`);
+      setFieldErrors({});
+      form.reset();
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.fieldErrors.length > 0) {
+        const nextFieldErrors: Partial<Record<ContactField, string>> = {};
+        for (const apiError of error.fieldErrors) {
+          const field = apiFieldNames[apiError.field];
+          if (field) nextFieldErrors[field] = apiError.message;
+        }
+
+        if (Object.keys(nextFieldErrors).length > 0) {
+          setFieldErrors(nextFieldErrors);
+          setSubmissionStatus("error");
+          setSubmissionMessage(
+            "Please review the highlighted fields and try again.",
+          );
+        } else {
+          setSubmissionStatus("error");
+          setSubmissionMessage(error.message);
+        }
+      } else {
+        setSubmissionStatus("error");
+        setSubmissionMessage(
+          error instanceof Error ? error.message : "Could not save your message.",
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="bg-brand-black">
       {/* Header */}
@@ -158,7 +329,19 @@ export default function ContactPage() {
               SEND A MESSAGE
             </motion.p>
 
-            <form className="mt-8" onSubmit={(event) => event.preventDefault()}>
+            <form className="mt-8" onSubmit={handleSubmit} noValidate>
+              {submissionMessage && submissionStatus === "error" && (
+                <div
+                  role="alert"
+                  className="mb-8 flex items-start gap-3 rounded-md border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-200"
+                >
+                  <AlertCircle
+                    className="mt-0.5 h-5 w-5 shrink-0 text-red-400"
+                    aria-hidden="true"
+                  />
+                  <p>{submissionMessage}</p>
+                </div>
+              )}
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                 {fields.map((field, index) => (
                   <motion.div
@@ -172,18 +355,38 @@ export default function ContactPage() {
                       ease: "easeOut",
                     }}
                   >
-                    <label
+                    <FieldLabel
                       htmlFor={field.id}
-                      className="block text-[10px] uppercase tracking-[0.25em] text-brand-ivory/40"
-                    >
-                      {field.label}
-                    </label>
+                      label={field.label}
+                      required={field.required}
+                    />
                     <input
                       id={field.id}
                       name={field.id}
                       type={field.type}
                       placeholder={field.placeholder}
-                      className={`mt-3 ${inputClasses}`}
+                      className={`mt-3 ${inputClassName(field.id)}`}
+                      required={field.required}
+                      maxLength={
+                        field.id === "fullName"
+                          ? 120
+                          : field.id === "email"
+                            ? 254
+                            : field.id === "contactNumber"
+                              ? 40
+                              : 200
+                      }
+                      aria-invalid={Boolean(fieldErrors[field.id])}
+                      aria-describedby={
+                        fieldErrors[field.id]
+                          ? `${field.id}-error`
+                          : undefined
+                      }
+                      onChange={() => clearFieldError(field.id)}
+                    />
+                    <FieldError
+                      id={`${field.id}-error`}
+                      message={fieldErrors[field.id]}
                     />
                   </motion.div>
                 ))}
@@ -196,31 +399,54 @@ export default function ContactPage() {
                 transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
                 className="mt-8"
               >
-                <label
+                <FieldLabel
                   htmlFor="message"
-                  className="block text-[10px] uppercase tracking-[0.25em] text-brand-ivory/40"
-                >
-                  MESSAGE
-                </label>
+                  label="MESSAGE"
+                  required
+                />
                 <textarea
                   id="message"
                   name="message"
                   rows={5}
                   placeholder="Tell us more about your project goals..."
-                  className={`mt-3 resize-none ${inputClasses}`}
+                  className={`mt-3 resize-none ${inputClassName("message")}`}
+                  required
+                  maxLength={10000}
+                  aria-invalid={Boolean(fieldErrors.message)}
+                  aria-describedby={
+                    fieldErrors.message ? "message-error" : undefined
+                  }
+                  onChange={() => clearFieldError("message")}
+                />
+                <FieldError
+                  id="message-error"
+                  message={fieldErrors.message}
                 />
               </motion.div>
 
+              <p
+                role={submissionStatus === "success" ? "status" : undefined}
+                aria-live="polite"
+                className={`mt-6 text-sm ${
+                  submissionStatus === "success"
+                    ? "text-brand-ivory/70"
+                    : "sr-only"
+                }`}
+              >
+                {submissionStatus === "success" ? submissionMessage : ""}
+              </p>
+
               <motion.button
                 type="submit"
+                disabled={isSubmitting}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
-                className="mt-10 w-full rounded-full bg-brand-violet px-8 py-4 text-sm font-semibold uppercase tracking-[0.15em] text-brand-ivory transition-colors hover:bg-brand-violet/85"
+                className="mt-4 w-full rounded-full bg-brand-violet px-8 py-4 text-sm font-semibold uppercase tracking-[0.15em] text-brand-ivory transition-colors hover:bg-brand-violet/85 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                SEND MESSAGE
+                {isSubmitting ? "SENDING..." : "SEND MESSAGE"}
               </motion.button>
             </form>
           </div>
