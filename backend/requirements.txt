@@ -3,3 +3,5 @@ uvicorn
 sqlalchemy
 pydantic
 python-multipart
+httpx2
+python-dotenv

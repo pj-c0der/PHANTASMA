@@ -8,7 +8,15 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, CloudUpload, Info, X } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  ChevronDown,
+  CloudUpload,
+  Info,
+  X,
+} from "lucide-react";
+import { ApiRequestError, submitForm } from "@/lib/api";
 
 const inputClasses =
   "w-full bg-transparent border-b border-brand-ivory/20 py-2 text-brand-ivory placeholder-brand-ivory/30 focus:border-brand-violet focus:outline-none transition-colors";
@@ -24,8 +32,93 @@ const services = [
   "Other",
 ];
 
+type BookingField =
+  | "fullName"
+  | "email"
+  | "contactNumber"
+  | "service"
+  | "projectDate"
+  | "location"
+  | "scope"
+  | "projectDetails";
+
+const requiredFields: { name: BookingField; label: string }[] = [
+  { name: "fullName", label: "full name" },
+  { name: "email", label: "email address" },
+  { name: "contactNumber", label: "contact number" },
+  { name: "service", label: "service" },
+  { name: "projectDate", label: "event/project date" },
+  { name: "location", label: "location" },
+  { name: "scope", label: "estimated project scope" },
+  { name: "projectDetails", label: "project details" },
+];
+
+const apiFieldNames: Record<string, BookingField> = {
+  fullName: "fullName",
+  full_name: "fullName",
+  email: "email",
+  contactNumber: "contactNumber",
+  contact_number: "contactNumber",
+  service: "service",
+  projectDate: "projectDate",
+  project_date: "projectDate",
+  location: "location",
+  scope: "scope",
+  projectDetails: "projectDetails",
+  project_details: "projectDetails",
+};
+
+function FieldLabel({
+  htmlFor,
+  label,
+  required = true,
+}: {
+  htmlFor: string;
+  label: string;
+  required?: boolean;
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className="flex items-center justify-between gap-3"
+    >
+      <span className={labelClasses}>{label}</span>
+      <span
+        className={`text-[9px] uppercase tracking-[0.2em] ${
+          required ? "text-brand-violet" : "text-brand-ivory/30"
+        }`}
+      >
+        {required ? "Required" : "Optional"}
+      </span>
+    </label>
+  );
+}
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+
+  return (
+    <p
+      id={id}
+      className="mt-2 flex items-center gap-2 text-xs leading-5 text-red-300"
+    >
+      <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      {message}
+    </p>
+  );
+}
+
 export default function BookPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<BookingField, string>>
+  >({});
+  const [submissionId, setSubmissionId] = useState<number | null>(null);
+  const [emailNotificationSent, setEmailNotificationSent] = useState<
+    boolean | null
+  >(null);
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -51,10 +144,106 @@ export default function BookPage() {
     }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const clearFieldError = (field: BookingField) => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+    setSubmissionError("");
+  };
+
+  const inputClassName = (field: BookingField) =>
+    `${inputClasses} ${
+      fieldErrors[field]
+        ? "border-red-400 focus:border-red-400"
+        : ""
+    }`;
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setSubmissionError("");
+
+    const form = event.currentTarget;
+    try {
+      const formData = new FormData(form);
+      const optionalValue = (key: string) =>
+        String(formData.get(key) ?? "").trim() || null;
+      const nextFieldErrors: Partial<Record<BookingField, string>> = {};
+      for (const field of requiredFields) {
+        if (!String(formData.get(field.name) ?? "").trim()) {
+          nextFieldErrors[field.name] =
+            field.name === "service"
+              ? "Please choose a service."
+              : `Please enter your ${field.label}.`;
+        }
+      }
+
+      const email = String(formData.get("email") ?? "").trim();
+      if (
+        email &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      ) {
+        nextFieldErrors.email = "Enter a valid email address.";
+      }
+
+      if (Object.keys(nextFieldErrors).length > 0) {
+        setFieldErrors(nextFieldErrors);
+        setSubmissionError(
+          "Please complete the highlighted fields before submitting.",
+        );
+        const firstInvalidField = requiredFields.find(
+          ({ name }) => nextFieldErrors[name],
+        );
+        if (firstInvalidField) {
+          document.getElementById(firstInvalidField.name)?.focus();
+        }
+        return;
+      }
+
+      const receipt = await submitForm("/api/project-inquiries", {
+        fullName: String(formData.get("fullName") ?? ""),
+        email: String(formData.get("email") ?? ""),
+        contactNumber: optionalValue("contactNumber"),
+        service: String(formData.get("service") ?? ""),
+        projectDate: optionalValue("projectDate"),
+        location: optionalValue("location"),
+        scope: optionalValue("scope"),
+        budget: optionalValue("budget"),
+        projectDetails: optionalValue("projectDetails"),
+      });
+      setSubmissionId(receipt.id);
+      setEmailNotificationSent(receipt.emailNotificationSent ?? null);
+      setIsSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.fieldErrors.length > 0) {
+        const nextFieldErrors: Partial<Record<BookingField, string>> = {};
+        for (const apiError of error.fieldErrors) {
+          const field = apiFieldNames[apiError.field];
+          if (field) nextFieldErrors[field] = apiError.message;
+        }
+        if (Object.keys(nextFieldErrors).length > 0) {
+          setFieldErrors(nextFieldErrors);
+          setSubmissionError(
+            "Please review the highlighted fields and try again.",
+          );
+        } else {
+          setSubmissionError(error.message);
+        }
+      } else {
+        setSubmissionError(
+          error instanceof Error
+            ? error.message
+            : "Could not save your project inquiry.",
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -139,57 +328,109 @@ export default function BookPage() {
                       01 / PROJECT INQUIRY FORM
                     </p>
 
-                    <form onSubmit={handleSubmit} className="mt-8">
+                    <form
+                      onSubmit={handleSubmit}
+                      className="mt-8"
+                      noValidate
+                    >
+                      {submissionError && (
+                        <div
+                          role="alert"
+                          className="mb-8 flex items-start gap-3 rounded-md border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-200"
+                        >
+                          <AlertCircle
+                            className="mt-0.5 h-5 w-5 shrink-0 text-red-400"
+                            aria-hidden="true"
+                          />
+                          <p>{submissionError}</p>
+                        </div>
+                      )}
                       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                         <div>
-                          <label htmlFor="fullName" className={labelClasses}>
-                            FULL NAME
-                          </label>
+                          <FieldLabel htmlFor="fullName" label="FULL NAME" />
                           <input
                             id="fullName"
                             name="fullName"
                             type="text"
                             placeholder="Jane Doe"
-                            className={`mt-3 ${inputClasses}`}
+                            className={`mt-3 ${inputClassName("fullName")}`}
+                            required
+                            aria-invalid={Boolean(fieldErrors.fullName)}
+                            aria-describedby={
+                              fieldErrors.fullName ? "fullName-error" : undefined
+                            }
+                            onChange={() => clearFieldError("fullName")}
+                          />
+                          <FieldError
+                            id="fullName-error"
+                            message={fieldErrors.fullName}
                           />
                         </div>
 
                         <div>
-                          <label htmlFor="email" className={labelClasses}>
-                            EMAIL ADDRESS
-                          </label>
+                          <FieldLabel htmlFor="email" label="EMAIL ADDRESS" />
                           <input
                             id="email"
                             name="email"
                             type="email"
                             placeholder="jane@example.com"
-                            className={`mt-3 ${inputClasses}`}
+                            className={`mt-3 ${inputClassName("email")}`}
+                            required
+                            aria-invalid={Boolean(fieldErrors.email)}
+                            aria-describedby={
+                              fieldErrors.email ? "email-error" : undefined
+                            }
+                            onChange={() => clearFieldError("email")}
+                          />
+                          <FieldError
+                            id="email-error"
+                            message={fieldErrors.email}
                           />
                         </div>
 
                         <div>
-                          <label htmlFor="contactNumber" className={labelClasses}>
-                            CONTACT NUMBER
-                          </label>
+                          <FieldLabel
+                            htmlFor="contactNumber"
+                            label="CONTACT NUMBER"
+                          />
                           <input
                             id="contactNumber"
                             name="contactNumber"
                             type="tel"
                             placeholder="+63 --- --- ----"
-                            className={`mt-3 ${inputClasses}`}
+                            className={`mt-3 ${inputClassName("contactNumber")}`}
+                            required
+                            aria-invalid={Boolean(fieldErrors.contactNumber)}
+                            aria-describedby={
+                              fieldErrors.contactNumber
+                                ? "contactNumber-error"
+                                : undefined
+                            }
+                            onChange={() => clearFieldError("contactNumber")}
+                          />
+                          <FieldError
+                            id="contactNumber-error"
+                            message={fieldErrors.contactNumber}
                           />
                         </div>
 
                         <div>
-                          <label htmlFor="service" className={labelClasses}>
-                            SERVICE NEEDED
-                          </label>
+                          <FieldLabel
+                            htmlFor="service"
+                            label="SERVICE NEEDED"
+                          />
                           <div className="relative mt-3">
                             <select
                               id="service"
                               name="service"
                               defaultValue=""
-                              className={`${inputClasses} appearance-none pr-8`}
+                              className={`${inputClassName("service")} appearance-none pr-8`}
+                              required
+                              aria-invalid={Boolean(fieldErrors.service)}
+                              aria-describedby={
+                                fieldErrors.service ? "service-error" : undefined
+                              }
+                              onChange={() => clearFieldError("service")}
                             >
                               <option
                                 value=""
@@ -213,50 +454,88 @@ export default function BookPage() {
                               aria-hidden="true"
                             />
                           </div>
-                        </div>
-
-                        <div>
-                          <label htmlFor="projectDate" className={labelClasses}>
-                            EVENT / PROJECT DATE
-                          </label>
-                          <input
-                            id="projectDate"
-                            name="projectDate"
-                            type="date"
-                            className={`mt-3 ${inputClasses} [color-scheme:dark]`}
+                          <FieldError
+                            id="service-error"
+                            message={fieldErrors.service}
                           />
                         </div>
 
                         <div>
-                          <label htmlFor="location" className={labelClasses}>
-                            LOCATION
-                          </label>
+                          <FieldLabel
+                            htmlFor="projectDate"
+                            label="EVENT / PROJECT DATE"
+                          />
+                          <input
+                            id="projectDate"
+                            name="projectDate"
+                            type="date"
+                            className={`mt-3 ${inputClassName("projectDate")} [color-scheme:dark]`}
+                            required
+                            aria-invalid={Boolean(fieldErrors.projectDate)}
+                            aria-describedby={
+                              fieldErrors.projectDate
+                                ? "projectDate-error"
+                                : undefined
+                            }
+                            onChange={() => clearFieldError("projectDate")}
+                          />
+                          <FieldError
+                            id="projectDate-error"
+                            message={fieldErrors.projectDate}
+                          />
+                        </div>
+
+                        <div>
+                          <FieldLabel htmlFor="location" label="LOCATION" />
                           <input
                             id="location"
                             name="location"
                             type="text"
                             placeholder="City, venue, or address"
-                            className={`mt-3 ${inputClasses}`}
+                            className={`mt-3 ${inputClassName("location")}`}
+                            required
+                            aria-invalid={Boolean(fieldErrors.location)}
+                            aria-describedby={
+                              fieldErrors.location ? "location-error" : undefined
+                            }
+                            onChange={() => clearFieldError("location")}
+                          />
+                          <FieldError
+                            id="location-error"
+                            message={fieldErrors.location}
                           />
                         </div>
 
                         <div>
-                          <label htmlFor="scope" className={labelClasses}>
-                            ESTIMATED PROJECT SCOPE
-                          </label>
+                          <FieldLabel
+                            htmlFor="scope"
+                            label="ESTIMATED PROJECT SCOPE"
+                          />
                           <input
                             id="scope"
                             name="scope"
                             type="text"
                             placeholder="e.g. One-day event, 3-week campaign"
-                            className={`mt-3 ${inputClasses}`}
+                            className={`mt-3 ${inputClassName("scope")}`}
+                            required
+                            aria-invalid={Boolean(fieldErrors.scope)}
+                            aria-describedby={
+                              fieldErrors.scope ? "scope-error" : undefined
+                            }
+                            onChange={() => clearFieldError("scope")}
+                          />
+                          <FieldError
+                            id="scope-error"
+                            message={fieldErrors.scope}
                           />
                         </div>
 
                         <div>
-                          <label htmlFor="budget" className={labelClasses}>
-                            BUDGET RANGE (OPTIONAL)
-                          </label>
+                          <FieldLabel
+                            htmlFor="budget"
+                            label="BUDGET RANGE"
+                            required={false}
+                          />
                           <input
                             id="budget"
                             name="budget"
@@ -268,18 +547,28 @@ export default function BookPage() {
                       </div>
 
                       <div className="mt-8">
-                        <label
+                        <FieldLabel
                           htmlFor="projectDetails"
-                          className={labelClasses}
-                        >
-                          PROJECT DETAILS
-                        </label>
+                          label="PROJECT DETAILS"
+                        />
                         <textarea
                           id="projectDetails"
                           name="projectDetails"
                           rows={5}
                           placeholder="Tell us about the project, the story you want to tell, and any references..."
-                          className={`mt-3 resize-none ${inputClasses}`}
+                          className={`mt-3 resize-none ${inputClassName("projectDetails")}`}
+                          required
+                          aria-invalid={Boolean(fieldErrors.projectDetails)}
+                          aria-describedby={
+                            fieldErrors.projectDetails
+                              ? "projectDetails-error"
+                              : undefined
+                          }
+                          onChange={() => clearFieldError("projectDetails")}
+                        />
+                        <FieldError
+                          id="projectDetails-error"
+                          message={fieldErrors.projectDetails}
                         />
                       </div>
 
@@ -310,6 +599,9 @@ export default function BookPage() {
                           </p>
                           <p className="mt-2 text-xs text-brand-ivory/40">
                             PDF, JPG, PNG, MP4 — Max 25MB
+                          </p>
+                          <p className="mt-2 text-xs text-brand-ivory/40">
+                            Attachments are not included in this test submission yet.
                           </p>
                           <input
                             id="project-files"
@@ -356,9 +648,10 @@ export default function BookPage() {
                         </p>
                         <button
                           type="submit"
-                          className="w-full rounded-full bg-brand-violet px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.15em] text-brand-ivory transition-colors hover:bg-brand-violet/85 sm:w-auto"
+                          disabled={isSubmitting}
+                          className="w-full rounded-full bg-brand-violet px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.15em] text-brand-ivory transition-colors hover:bg-brand-violet/85 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                         >
-                          SUBMIT PROJECT INQUIRY
+                          {isSubmitting ? "SENDING..." : "SUBMIT PROJECT INQUIRY"}
                         </button>
                       </div>
                     </form>
@@ -384,10 +677,24 @@ export default function BookPage() {
                   Thank You. Your project inquiry has been received.
                 </h2>
                 <p className="mt-6 max-w-2xl text-sm leading-7 text-brand-ivory/60 sm:text-base">
-                  Our team will carefully review the details you&apos;ve shared
+                  Your inquiry has been saved as reference #{submissionId}. Our team will carefully review the details you&apos;ve shared
                   and reach out within 2-3 business days to coordinate next
                   steps and confirm your project timeline.
                 </p>
+                {emailNotificationSent !== null && (
+                  <p
+                    role="status"
+                    className={`mt-4 max-w-2xl text-sm leading-6 ${
+                      emailNotificationSent
+                        ? "text-brand-ivory/50"
+                        : "text-amber-200"
+                    }`}
+                  >
+                    {emailNotificationSent
+                      ? "The team notification was accepted by the email server."
+                      : "Your inquiry was saved, but the team email notification could not be sent. Please contact us directly."}
+                  </p>
+                )}
                 <Link
                   href="/"
                   className="mt-10 rounded-full border border-brand-ivory/20 px-8 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-brand-ivory transition-colors hover:bg-white/5"
